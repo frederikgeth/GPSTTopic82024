@@ -71,7 +71,7 @@ end
 
 Fuel cost minimisation and fairness objective, using squared difference from mean
 """
-function objective_mc_fair_pg_mse(pm::_PMD.AbstractUnbalancedPowerModel; report::Bool=true, weightcompetitive=1)
+function objective_mc_fair_pg_mse(pm::_PMD.AbstractUnbalancedPowerModel; report::Bool=true, weightcompetitive=.1)
     objective_variable_pg_fair_mse(pm; report=report)
  
     return JuMP.@objective(pm.model, Min,
@@ -91,7 +91,7 @@ end
 
 Fuel cost minimisation and fairness objective, using the absolute difference from mean
 """
-function objective_mc_fair_pg_abs(pm::_PMD.AbstractUnbalancedPowerModel; report::Bool=true, weightcompetitive=1)
+function objective_mc_fair_pg_abs(pm::_PMD.AbstractUnbalancedPowerModel; report::Bool=true, weightcompetitive=.1)
     objective_variable_pg_fair_abs(pm; report=report)
  
     return JuMP.@objective(pm.model, Min,

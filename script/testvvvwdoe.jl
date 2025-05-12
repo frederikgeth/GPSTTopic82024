@@ -9,18 +9,17 @@ file = "data/LV30_315bus/Master.dss"
 
 # vscale = 1.07
 
-for vscale in 0.98:0.01:1.07
+for vscale in 0.98:0.01:1.07, loadscale in [1] #0.8:0.05:1.0
+    # for vscale in 0.98:0.01:1.07, loadscale in [1] #0.8:0.05:1.0
     eng4w = parse_file(file, transformations=[transform_loops!,remove_all_bounds!])
     eng4w["settings"]["sbase_default"] = 1
     eng4w["voltage_source"]["source"]["rs"] *=0
     eng4w["voltage_source"]["source"]["xs"] *=0
     eng4w["voltage_source"]["source"]["vm"] *=vscale
 
-
     reduce_line_series!(eng4w)
     math4w = transform_data_model(eng4w, kron_reduce=false, phase_project=false)
     add_start_vrvi!(math4w)
-
 
     for (i,bus) in math4w["bus"]
 
@@ -42,8 +41,8 @@ for vscale in 0.98:0.01:1.07
     end
 
     for (d,load) in math4w["load"]
-        load["pd"] .*= 1.0
-        load["qd"] .*= 1.0
+        load["pd"] .*= loadscale
+        load["qd"] .*= loadscale
     end
 
     function add_gens!(math4w)
@@ -75,12 +74,12 @@ for vscale in 0.98:0.01:1.07
     pg_cost1 = [gen["pg_cost"] for (g,gen) in res_comp["solution"]["gen"] if g!="1"]
 
     res_ms = solve_mc_vvvw_doe_mse(math4w, ipopt)
-    @assert(res_ms["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
+    @assert(res_ms["termination_status"]==LOCALLY_SOLVED || res_ms["termination_status"]==ALMOST_LOCALLY_SOLVED)
     pg_cost2 = [gen["pg_cost"] for (g,gen) in res_ms["solution"]["gen"] if g!="1"]
     res_ms_obj = round(res_ms["objective"], digits=2)
 
     res_abs = solve_mc_vvvw_doe_abs(math4w, ipopt)
-    @assert(res_abs["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
+    @assert(res_abs["termination_status"]==LOCALLY_SOLVED || res_abs["termination_status"]==ALMOST_LOCALLY_SOLVED)
     pg_cost3 = [gen["pg_cost"] for (g,gen) in res_abs["solution"]["gen"] if g!="1"]
     res_abs_obj = round(res_abs["objective"], digits=2)
 
@@ -90,7 +89,7 @@ for vscale in 0.98:0.01:1.07
         pg_cost4 = 0 .*pg_cost1
         res_eq_obj = 0
     else
-        @assert(res_eq["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
+        @assert(res_eq["termination_status"]==LOCALLY_SOLVED || res_eq["termination_status"]==ALMOST_LOCALLY_SOLVED)
         pg_cost4 = [gen["pg_cost"] for (g,gen) in res_eq["solution"]["gen"] if g!="1"]
         res_eq_obj = round(res_eq["objective"], digits=2)
     end
@@ -110,8 +109,8 @@ for vscale in 0.98:0.01:1.07
     ylabel!("Export DOE (kW)")
     ylims!(0,5.1)
     xlims!(0.5,length(pg_cost1)+0.5)
-    title!("Export limits at reference voltage of $vscale pu")
-    savefig("objective_comparison_vsource$vscale.pdf")
+    title!("Export limits at reference voltage of $vscale pu with load at $loadscale")
+    savefig("objective_comparison_vsource$vscale load$loadscale.pdf")
 
 end
 # v_mag = stack([hypot.(bus["vr"],bus["vi"]) for (b,bus) in res["solution"]["bus"]], dims=1)

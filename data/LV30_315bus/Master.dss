@@ -1,17 +1,11 @@
-new circuit.lv30_315bus angle=0.0000000000 basekv=0.4 phases=3 bus1=B468 model=ideal
+new circuit.lv30_315bus basekv=0.4 phases=3 bus1=sourcebus model=ideal
 
-
-set defaultbasefrequency=50.0000000000
-set basefrequency=50.0000000000
 
 redirect Linecodes.dss
 redirect lines.dss
 redirect Loads.dss
-// redirect Transformers.dss
 redirect Switches.dss
 redirect Groundings.dss
 
-batchedit load..* kw=4 kvar=0
-solve
-// export Voltages
-
+new line.for_energymeter lineCode=ughv_400al_triplex_ug_4w_bundled bus1=sourcebus bus2=B2518 length=0.0001 units=km phases=4
+New EnergyMeter.Source     Element=Line.for_energymeter Terminal=1  
