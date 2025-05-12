@@ -16,6 +16,7 @@ import InfrastructureModels: optimize_model!, @im_fields, nw_id_default, ismulti
 
 
 include("core/objective.jl")
+include("core/variable.jl")
 
 
 include("prob/doe.jl")
@@ -23,6 +24,9 @@ include("prob/vvvw_opf.jl")
 include("prob/vvvw_doe.jl")
 
 include("form/en_ivr.jl")
+
+include("util/curve_definitions.jl")
+
 
 export nw_id_default, optimize_model!, ismultinetwork, update_data!
 

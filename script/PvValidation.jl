@@ -3,11 +3,14 @@ using OpenDSSDirect
 using PowerModelsDistribution
 using Ipopt
 using Plots
-include("./../src/GPSTTopic82024.jl")
+using GPSTTopic82024
+# include("./../src/GPSTTopic82024.jl")
 include("./../notebooks/PerPhasePlot.jl")
-using .GPSTTopic82024
-
-function simulatePvAgainstDoe(; file::String="data/ENWLNW1F1/Master.dss")
+using GPSTTopic82024
+file = "data/LV30_315bus/Master.dss"
+# file = "C:\\Users\\Frederik Geth\\Documents\\GitHub\\GPSTTopic82024\\data\\LV30_315bus\\Master.dss"
+simulatePvAgainstDoe(;file)
+function simulatePvAgainstDoe(; file::String="data/LV30_315bus/Master.dss")
     
     pvBusses, passiveBusses = assignPvLoadBusses(file, 2)
     pvBusExportLims = runDoeSimulation(file, pvBusses)

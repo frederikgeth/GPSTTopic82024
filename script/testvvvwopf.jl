@@ -12,8 +12,9 @@ ipopt = Ipopt.Optimizer
 ## Main loop
 
 file = "data/LV30_315bus/Master.dss"
-eng4w = parse_file(file, transformations=[transform_loops!,remove_all_bounds!])
+eng4w = parse_file(file, transformations=[transform_loops!, remove_all_bounds!])
 eng4w["settings"]["sbase_default"] = 1
+eng4w["voltage_source"]["source"]["vm"] *=1.07
 eng4w["voltage_source"]["source"]["rs"] *=0
 eng4w["voltage_source"]["source"]["xs"] *=0
 
@@ -33,19 +34,20 @@ for (i,bus) in math4w["bus"]
 
 end
 
-for (g,gen) in math4w["gen"]
-    gen["cost"] = 0.0
-end
+math4w["gen"]["1"]["cost"] = 10
+# for (g,gen) in math4w["gen"]
+#     gen["cost"] = 0.0
+# end
 
 for (d,load) in math4w["load"]
-    load["pd"] .*= 0.9
-    load["qd"] .*= 0.9
+    load["pd"] .*= 1
+    load["qd"] .*= 1
 end
 
 function add_gens!(math4w)
     gen_counter = 2
     for (d, load) in math4w["load"]
-        if mod(load["index"], 11) == 1
+        if mod(load["index"], 4) == 1
             # phases = 3
             phases = length(load["connections"])-1
             math4w["gen"]["$gen_counter"] = deepcopy(math4w["gen"]["1"])
@@ -75,6 +77,7 @@ res = solve_mc_vvvw_opf(math4w, ipopt)
 # res = solve_mc_opf(math4w, IVRENPowerModel, ipopt)
 
 # pg_cost = [gen["pg_cost"] for (g,gen) in res["solution"]["gen"]]
+pg = [gen["pg"] for (g,gen) in res["solution"]["gen"] if g!="1"]
 
 v_mag = stack([hypot.(bus["vr"][1:4],bus["vi"][1:4]) for (b,bus) in res["solution"]["bus"]], dims=1)
 
@@ -104,16 +107,16 @@ for (g,gen) in math4w["gen"]
 
     # @show (res["solution"]["gen"]["$g"]["vg_pn"], res["solution"]["bus"]["$bus"]["vpn"][conn...], res["solution"]["bus"]["$bus"]["vm"][conn...])
     if g!="1"
-        @show conn, g
-        @show res["solution"]["bus"]["$bus"]["vpn"] #[conn]
-        @show res["solution"]["bus"]["$bus"]["vm"] #[conn]
-        @show res["solution"]["gen"]["$g"]["vg_pn"]
-        @show res["solution"]["bus"]["$bus"]["vpn"][conn...]
-        @show res["solution"]["bus"]["$bus"]["vm"][conn...]
+        # @show conn, g
+        # @show res["solution"]["bus"]["$bus"]["vpn"] #[conn]
+        # @show res["solution"]["bus"]["$bus"]["vm"] #[conn]
+        # @show res["solution"]["gen"]["$g"]["vg_pn"]
+        # @show res["solution"]["bus"]["$bus"]["vpn"][conn...]
+        # @show res["solution"]["bus"]["$bus"]["vm"][conn...]
         vpn = res["solution"]["gen"]["$g"]["vg_pn"]
         qg = res["solution"]["gen"]["$g"]["qg"]
         @show vpn, qg
         scatter!(vpn, qg./5)
     end
 end
-title!("test")
+title!("Plot")

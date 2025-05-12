@@ -11,7 +11,7 @@ redirect Loads.dss
 redirect Switches.dss
 redirect Groundings.dss
 
-// batchedit load..* kw=1
+batchedit load..* kw=4 kvar=0
 solve
-export Voltages
+// export Voltages
 
