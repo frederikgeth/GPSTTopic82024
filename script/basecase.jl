@@ -13,17 +13,28 @@ busdistances_dict = Dict(busdistancesdf.Bus[i] => busdistancesdf.busdistances[i]
 
 
 vscale = 1
-loadscale = 0.1
+loadscale = 0.
 # for vscale in 0.98:0.01:1.07, loadscale in [1] #0.8:0.05:1.0
     # for vscale in 0.98:0.01:1.07, loadscale in [1] #0.8:0.05:1.0
     eng4w = parse_file(file, transformations=[transform_loops!,remove_all_bounds!])
-    eng4w["settings"]["sbase_default"] = 10
-    eng4w["voltage_source"]["source"]["rs"] *=0
-    eng4w["voltage_source"]["source"]["xs"] *=0
+    eng4w["conductor_ids"] = 1:4
+    eng4w["settings"]["sbase_default"] = 1
+    eng4w["voltage_source"]["source"]["rs"] =zeros(3,3)
+    eng4w["voltage_source"]["source"]["xs"] =zeros(3,3)
     eng4w["voltage_source"]["source"]["vm"] *=vscale
 
     reduce_line_series!(eng4w)
     math4w = transform_data_model(eng4w, kron_reduce=false, phase_project=false)
+    math4w["bus"]["190"]["grounded"] = Bool[0, 0, 0, 0]
+    math4w["bus"]["190"]["vr_start"] = [1.0, -0.5, -0.5, 0.0]
+    math4w["bus"]["190"]["vi_start"] = [0.0, -0.866025, 0.866025, 0.0]
+    math4w["bus"]["190"]["va"] = [0.0, -2.0944, 2.0944, 0.0]
+    math4w["bus"]["190"]["vm"] = [1.0, 1.0, 1.0, 0.0]
+    math4w["bus"]["190"]["vmin"] = 0 .*[1.0, 1.0, 1.0, 1.0]
+    math4w["bus"]["190"]["vmax"] = 2* [1.0, 1.0, 1.0, 1.0]
+    math4w["bus"]["190"]["terminals"] = collect(1:4)
+    
+    
     add_start_vrvi!(math4w)
 
     for (i,bus) in math4w["bus"]
@@ -41,7 +52,13 @@ loadscale = 0.1
     end
 
     for (g,gen) in math4w["gen"]
-        gen["cost"] = 1
+        math4w["gen"]["1"]["cost"] = [1, 1, 1]
+        s = 100
+        gen["pmin"] = -s*ones(3)
+        gen["pmax"] = s*ones(3)
+        gen["qmin"] = -s*ones(3)
+        gen["qmax"] = s*ones(3)
+        gen["connections"] = collect(1:4)
     end
 
     for (d,load) in math4w["load"]
@@ -72,7 +89,7 @@ loadscale = 0.1
     # add_gens!(math4w)
     
     res_comp = solve_mc_vvvw_opf(math4w, ipopt)
-    # res = solve_mc_opf(math4w, IVRENPowerModel, ipopt)
+    res = solve_mc_opf(math4w, IVRENPowerModel, ipopt)
 
     # res_comp = solve_mc_vvvw_opf(math4w, ipopt)
     # @assert(res_comp["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
