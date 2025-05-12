@@ -4,10 +4,10 @@ using Ipopt
 using Plots
 ipopt = Ipopt.Optimizer
 
-vvc = GPSTTopic82024.voltvar_handle(ϵ=0.0001)
-vwc = GPSTTopic82024.voltwatt_handle(ϵ=0.0001)
-plot(0.85:0.001:1.15,vvc.(0.85:0.001:1.15))
-plot(0.85:0.001:1.15,vwc.(0.85:0.001:1.15))
+# vvc = GPSTTopic82024.voltvar_handle(ϵ=0.0001)
+# vwc = GPSTTopic82024.voltwatt_handle(ϵ=0.0001)
+# plot(0.85:0.001:1.15,vvc.(0.85:0.001:1.15))
+# plot(0.85:0.001:1.15,vwc.(0.85:0.001:1.15))
 
 ## Main loop
 
@@ -38,8 +38,8 @@ for (g,gen) in math4w["gen"]
 end
 
 for (d,load) in math4w["load"]
-    load["pd"] .*= 0.4
-    load["qd"] .*= 0.4
+    load["pd"] .*= 0.9
+    load["qd"] .*= 0.9
 end
 
 function add_gens!(math4w)
@@ -69,15 +69,18 @@ add_gens!(math4w)
 
 
 res = solve_mc_vvvw_opf(math4w, ipopt)
+
+
+
 # res = solve_mc_opf(math4w, IVRENPowerModel, ipopt)
 
 # pg_cost = [gen["pg_cost"] for (g,gen) in res["solution"]["gen"]]
 
 v_mag = stack([hypot.(bus["vr"][1:4],bus["vi"][1:4]) for (b,bus) in res["solution"]["bus"]], dims=1)
 
-for (b,bus) in res["solution"]["bus"]
-    @show (b, length(bus["vr"])) 
-end
+# for (b,bus) in res["solution"]["bus"]
+#     @show (b, length(bus["vr"])) 
+# end
 
 plot(v_mag, label=["a" "b" "c" "n"])
 plot!([0; length(res["solution"]["bus"])], [0.9; 0.9], label="vmin")
@@ -89,7 +92,7 @@ v_mag = [gen["vg_pn"] for (g,gen) in res["solution"]["gen"]]
 
 
 for (b,bus) in res["solution"]["bus"]
-    bus["vpn"] = vpn = abs.((bus["vr"][1:end-1] .+ im.*bus["vi"][1:end-1]) .- (bus["vr"][end] .+ im.*bus["vi"][end]))
+    bus["vpn"] = vpn = abs.((bus["vr"][1:3] .+ im.*bus["vi"][1:3]) .- (bus["vr"][4] .+ im.*bus["vi"][4]))
     bus["vm"] = vm = abs.(bus["vr"] .+ im.*bus["vi"])
 end
 
@@ -98,10 +101,15 @@ plot(0.85:0.001:1.15,vvc.(0.85:0.001:1.15))
 for (g,gen) in math4w["gen"]
     bus = gen["gen_bus"]
     conn = gen["connections"][1:end-1]
-    @show conn
-    @show res["solution"]["bus"]["$bus"]["vpn"] #[conn]
-    @show res["solution"]["bus"]["$bus"]["vm"] #[conn]
+
+    # @show (res["solution"]["gen"]["$g"]["vg_pn"], res["solution"]["bus"]["$bus"]["vpn"][conn...], res["solution"]["bus"]["$bus"]["vm"][conn...])
     if g!="1"
+        @show conn, g
+        @show res["solution"]["bus"]["$bus"]["vpn"] #[conn]
+        @show res["solution"]["bus"]["$bus"]["vm"] #[conn]
+        @show res["solution"]["gen"]["$g"]["vg_pn"]
+        @show res["solution"]["bus"]["$bus"]["vpn"][conn...]
+        @show res["solution"]["bus"]["$bus"]["vm"][conn...]
         vpn = res["solution"]["gen"]["$g"]["vg_pn"]
         qg = res["solution"]["gen"]["$g"]["qg"]
         @show vpn, qg

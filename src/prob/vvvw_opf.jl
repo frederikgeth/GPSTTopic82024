@@ -98,7 +98,7 @@ function build_mc_vvvw_opf(pm::_PMD.AbstractExplicitNeutralIVRModel)
     # objective_mc_max_pg_competitive(pm)
 end
 
-function rectifier(x,y,a;type="smooth", ϵ=ϵ)
+function rectifier(x,y,a;type="smooth", ϵ=0.0001)
     if type=="nonsmooth"
         return f = vals -> a*max(0, vals - x) + y
     elseif type=="smooth"
@@ -106,6 +106,10 @@ function rectifier(x,y,a;type="smooth", ϵ=ϵ)
     end
 end
 
+```
+Inputs in PU voltage
+outputs in pu power relative to apparent power rating
+```
 function voltvar_handle(;ϵ=0.0001, type="smooth")
     V_vv = [195; 207; 220; 240; 258; 276]./230
     Q_vv = [44; 44;   0;   0;  -60;  -60]./100
@@ -117,6 +121,10 @@ function voltvar_handle(;ϵ=0.0001, type="smooth")
     vv_curve_pu(x) = r1pu(x) + r2pu(x) + r3pu(x) + r4pu(x)
 end
 
+```
+Inputs in PU voltage
+outputs in pu power relative to apparent power rating
+```
 function voltwatt_handle(;ϵ=0.0001, type="smooth")
     V_vw = [195; 253; 260; 276]./230
     P_vw = [100; 100; 20; 20]./100
@@ -133,10 +141,10 @@ function constraint_mc_gen_vpn(pm::_PMD.ExplicitNeutralModels, id::Int; nw::Int=
     # bus = _PMD.ref(pm, nw, :bus, generator["gen_bus"])["bus_i"]
     vr = _PMD.var(pm, nw, :vr, generator["gen_bus"])
     vi = _PMD.var(pm, nw, :vi, generator["gen_bus"])
-    phases = generator["connections"][1:end-1]
+    phases = generator["connections"][1]
     for (idx, p) in enumerate(phases)
-        @show idx, p, id
-        JuMP.@constraint(pm.model,  (vr[p]-vr[end])^2 + (vi[p]-vi[end])^2 == vpn[idx]^2)
+        # @show idx, p, id
+        JuMP.@constraint(pm.model,  (vr[p]-vr[4])^2 + (vi[p]-vi[4])^2 == vpn[idx]^2)
     end
 end
 
@@ -149,14 +157,16 @@ function constraint_mc_gen_voltvar(pm::_PMD.ExplicitNeutralModels, id::Int; nw::
 
     qg = _PMD.var(pm, nw, :qg, id)
     vpn = _PMD.var(pm, nw, :vg_pn, id)
-    phases = generator["connections"][1:end-1]
-
-    if !contains(generator["source_id"], "voltage_source.source")
+    phases = generator["connections"][1]
+    @show "vv  gen $id"
+    if id == 1
+        # do nothing for source bus
+    else
         if configuration==_PMD.WYE
             for (idx, p) in enumerate(phases)
                 JuMP.@NLconstraint(pm.model, qg[idx] == vv_curve_pu(vpn[idx])*smax[idx])
+                @show "vv added for gen $id"
             end
-
         else #Delta
             error("delta connections not supported")
         end

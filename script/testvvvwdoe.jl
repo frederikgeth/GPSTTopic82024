@@ -87,6 +87,7 @@ plot!(pg_cost2, label="min deviation squared")
 plot!(pg_cost3, label="min absolute deviation")
 plot!(pg_cost4, label="equal")
 xlabel!("PV system number (-)")
+
 ylabel!("Export DOE (kW)")
 ylims!(0,5.1)
 savefig("objective.pdf")
