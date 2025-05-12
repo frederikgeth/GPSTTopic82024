@@ -1,3 +1,0 @@
-- set up package test infrastructure here
-- develop unit tests using very simple networks
-- automate the CI through GitHub actions

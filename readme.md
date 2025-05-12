@@ -1,9 +1,7 @@
-This project is to collect ongoing efforts for GPST Topic 8 work in the FY 2024-2025
+This project is used for for GPST Topic 8 work Stage 4
 
-*Do not commit any sensitive data to this repo*
 
-- follow coding guidelines from PMD/PM/JuMP in that order
-- only use IVREN formulation
-- set up roadmap once overleaf document is in steady state
-- add License once we advertise publicly
-- work in branches, open PRs, ask for review, reviewer merges if happy
+CODE is licensed BSD 3-clause
+DATA is license by the original source, see
+- Heidarihaei, Rahmatollah; Geth, Frederik; & Sander, Claeys (2024): Four-wire low voltage power network dataset. v1. CSIRO. Data Collection. https://doi.org/10.25919/jaae-vc35
+- Source: Geth, Frederik; Heidari, Rahmat; Clark, Jordan; Lucas, Kurt; & Nimalsiri, Nanduni (2025): Realistic Australian Medium Voltage Feeder with Associated Low Voltage Feeders. v1. CSIRO. Data Collection. https://doi.org/10.25919/ghnz-bk28
