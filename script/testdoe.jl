@@ -3,12 +3,15 @@ using PowerModelsDistribution
 using Ipopt
 ipopt = Ipopt.Optimizer
 
-file = "data/ENWLNW1F1/Master.dss"
+file = "data/LV30_315bus/Master.dss"
+
 eng4w = parse_file(file, transformations=[transform_loops!,remove_all_bounds!])
 eng4w["settings"]["sbase_default"] = 1
+eng4w["voltage_source"]["source"]["rs"] *=0
+eng4w["voltage_source"]["source"]["xs"] *=0
+
 math4w = transform_data_model(eng4w, kron_reduce=false, phase_project=false)
 add_start_vrvi!(math4w)
-
 
 for (i,bus) in math4w["bus"]
     if bus["bus_type"] != 3 && !startswith(bus["source_id"], "transformer")
@@ -20,6 +23,11 @@ end
 
 for (g,gen) in math4w["gen"]
     gen["cost"] = 0.0
+end
+
+for (d,load) in math4w["load"]
+    load["pd"] .*= 0.2
+    load["qd"] .*= 0.2
 end
 
 function add_gens!(math4w)

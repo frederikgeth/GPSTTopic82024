@@ -11,9 +11,12 @@ plot(0.85:0.001:1.15,vwc.(0.85:0.001:1.15))
 
 ## Main loop
 
-file = "test/data/opendss/ENWLNW9F6/Master.dss"
+file = "data/LV30_315bus/Master.dss"
 eng4w = parse_file(file, transformations=[transform_loops!,remove_all_bounds!])
 eng4w["settings"]["sbase_default"] = 1
+eng4w["voltage_source"]["source"]["rs"] *=0
+eng4w["voltage_source"]["source"]["xs"] *=0
+
 reduce_line_series!(eng4w)
 math4w = transform_data_model(eng4w, kron_reduce=false, phase_project=false)
 add_start_vrvi!(math4w)
@@ -35,8 +38,8 @@ for (g,gen) in math4w["gen"]
 end
 
 for (d,load) in math4w["load"]
-    load["pd"] .*= 30.0
-    load["qd"] .*= 30.0
+    load["pd"] .*= 0.4
+    load["qd"] .*= 0.4
 end
 
 function add_gens!(math4w)
@@ -70,8 +73,11 @@ res = solve_mc_vvvw_opf(math4w, ipopt)
 
 # pg_cost = [gen["pg_cost"] for (g,gen) in res["solution"]["gen"]]
 
-v_mag = stack([hypot.(bus["vr"],bus["vi"]) for (b,bus) in res["solution"]["bus"]], dims=1)
+v_mag = stack([hypot.(bus["vr"][1:4],bus["vi"][1:4]) for (b,bus) in res["solution"]["bus"]], dims=1)
 
+for (b,bus) in res["solution"]["bus"]
+    @show (b, length(bus["vr"])) 
+end
 
 plot(v_mag, label=["a" "b" "c" "n"])
 plot!([0; length(res["solution"]["bus"])], [0.9; 0.9], label="vmin")

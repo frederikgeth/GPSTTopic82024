@@ -1,4 +1,5 @@
-new circuit.lv30_315bus angle=-30.0000000000 basekv=11.0000000000 phases=3 bus1=B271 model=ideal
+new circuit.lv30_315bus angle=0.0000000000 basekv=0.4 phases=3 bus1=B468 model=ideal
+
 
 set defaultbasefrequency=50.0000000000
 set basefrequency=50.0000000000
@@ -6,11 +7,11 @@ set basefrequency=50.0000000000
 redirect Linecodes.dss
 redirect lines.dss
 redirect Loads.dss
-redirect Transformers.dss
+// redirect Transformers.dss
 redirect Switches.dss
 redirect Groundings.dss
 
-batchedit load..* kw=1
+// batchedit load..* kw=1
 solve
 export Voltages
 
