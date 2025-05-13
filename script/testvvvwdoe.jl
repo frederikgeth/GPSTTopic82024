@@ -23,8 +23,8 @@ vscale = 1.08
 loadscale = 0.2
 pens =  ["r10", "r20", "r30", "r40", "r50", "r60", "r70", "r80", "r90"]
 pen = pens[7]
-
-for vscale in 1.00:0.01:1.10, loadscale in 0.1:0.1:1, pen in pens 
+for vscale in 1.04:0.01:1.10, loadscale in 0.1:0.1:1, pen in pens
+# for vscale in 1.00:0.01:1.10, loadscale in 0.1:0.1:1, pen in pens 
     @show vscale, loadscale, pen 
     eng4w = parse_file(file, transformations=[transform_loops!,remove_all_bounds!])
     eng4w["settings"]["sbase_default"] = 1
@@ -153,8 +153,8 @@ for vscale in 1.00:0.01:1.10, loadscale in 0.1:0.1:1, pen in pens
         ylabel!("Export DOE (kW)")
         ylims!(0,5.1)
         xlims!(0.5,length(pg_cost1)+0.5)
-        title!("VVVW, voltage of $vscale pu, load at $loadscale")
-        savefig("VVVW$vscale load$loadscale.pdf")
+        title!("VVVW, voltage of $vscale pu, load at $loadscale, pen $(pen[2:end])")
+        savefig("figures/VVVW$vscale load$loadscale pen$pen.pdf")
     end
 end
 
