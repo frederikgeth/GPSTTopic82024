@@ -59,3 +59,26 @@ function constraint_mc_gen_voltwatt(pm::_PMD.ExplicitNeutralModels, id::Int; nw:
         end
     end
 end
+
+function constraint_mc_gen_constant_powerfactor(pm::_PMD.ExplicitNeutralModels, id::Int; pf=0.95,nw::Int=nw_id_default, report::Bool=true)
+    generator = _PMD.ref(pm, nw, :gen, id)
+    configuration = generator["configuration"]
+
+    qg = _PMD.var(pm, nw, :qg, id)
+    pg = _PMD.var(pm, nw, :pg, id)
+
+    phases = generator["connections"][1]
+    # @show "vv  gen $id"
+    if id == 1
+        # do nothing for source bus
+        @show  generator
+    else
+        if configuration==_PMD.WYE
+            for (idx, p) in enumerate(phases)
+                JuMP.@NLconstraint(pm.model, qg[idx] == -pg[idx]*tan(acos(pf)))
+            end
+        else #Delta
+            error("delta connections not supported")
+        end
+    end
+end

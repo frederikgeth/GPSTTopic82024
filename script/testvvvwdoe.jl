@@ -120,18 +120,17 @@ for vscale in 1.04:0.01:1.10, loadscale in 0.1:0.1:1, pen in pens
 
     res_eq_obj = 0
     res_eq = solve_mc_vvvw_doe_equal(math4w, ipopt)
-    if res_eq["termination_status"]==LOCALLY_INFEASIBLE
-        pg_cost4 = 0 .*pg_cost1
-        res_eq_obj = 0
-        pg_ref_eq = NaN
-        qg_ref_eq = NaN
-    else
-        @assert(res_eq["termination_status"]==LOCALLY_SOLVED || res_eq["termination_status"]==ALMOST_LOCALLY_SOLVED)
+    if result_usable(res_eq)
         pg_cost4 = [gen["pg_cost"] for (g,gen) in res_eq["solution"]["gen"] if g!="1"]
         res_eq_obj = round(res_eq["objective"], digits=2)
         pg_ref_eq = res_eq["solution"]["gen"]["1"]["pg"]
         qg_ref_eq = res_eq["solution"]["gen"]["1"]["qg"]
-
+    else
+        #set export limit to 0
+        pg_cost4 = 0 .*pg_cost1
+        res_eq_obj = 0
+        pg_ref_eq = NaN
+        qg_ref_eq = NaN
     end
 
     if all_feasible

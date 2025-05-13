@@ -47,6 +47,7 @@ function build_mc_doe_max_pg_competitive(pm::_PMD.AbstractExplicitNeutralIVRMode
     for id in _PMD.ids(pm, :gen)
         _PMD.constraint_mc_generator_power(pm, id)
         _PMD.constraint_mc_generator_current(pm, id)
+        constraint_mc_gen_constant_powerfactor(pm, id)
     end
 
     for id in _PMD.ids(pm, :load)
@@ -137,6 +138,7 @@ function build_mc_doe_fair_pg_mse(pm::_PMD.AbstractExplicitNeutralIVRModel)
     for id in _PMD.ids(pm, :gen)
         _PMD.constraint_mc_generator_power(pm, id)
         _PMD.constraint_mc_generator_current(pm, id)
+        constraint_mc_gen_constant_powerfactor(pm, id)
     end
 
     for id in _PMD.ids(pm, :load)
@@ -227,6 +229,7 @@ function build_mc_doe_fair_pg_abs(pm::_PMD.AbstractExplicitNeutralIVRModel)
     for id in _PMD.ids(pm, :gen)
         _PMD.constraint_mc_generator_power(pm, id)
         _PMD.constraint_mc_generator_current(pm, id)
+        constraint_mc_gen_constant_powerfactor(pm, id)
     end
 
     for id in _PMD.ids(pm, :load)
@@ -319,6 +322,7 @@ function build_mc_doe_equal(pm::_PMD.AbstractExplicitNeutralIVRModel)
     for id in _PMD.ids(pm, :gen)
         _PMD.constraint_mc_generator_power(pm, id)
         _PMD.constraint_mc_generator_current(pm, id)
+        constraint_mc_gen_constant_powerfactor(pm, id)
     end
 
     for id in _PMD.ids(pm, :load)
@@ -414,6 +418,7 @@ function build_mc_doe_log_fairness(pm::_PMD.AbstractExplicitNeutralIVRModel)
     for id in _PMD.ids(pm, :gen)
         _PMD.constraint_mc_generator_power(pm, id)
         _PMD.constraint_mc_generator_current(pm, id)
+        constraint_mc_gen_constant_powerfactor(pm, id)
     end
 
     for id in _PMD.ids(pm, :load)
