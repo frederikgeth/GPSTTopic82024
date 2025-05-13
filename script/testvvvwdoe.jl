@@ -15,13 +15,17 @@ casepath = "data/$case"
 file = "$casepath/Master.dss"
 busdistancesdf = CSV.read("$casepath/busdistances.csv", DataFrame)
 busdistances_dict = Dict(busdistancesdf.Bus[i] => busdistancesdf.busdistances[i] for i in 1:nrow(busdistancesdf))
+p = CSV.read("data/penetration_samples.csv", DataFrame)
 
+result_usable(res) = res["termination_status"]==LOCALLY_SOLVED || res["termination_status"]==ALMOST_LOCALLY_SOLVED
 
 vscale = 1.08
 loadscale = 0.2
+pens =  ["r10", "r20", "r30", "r40", "r50", "r60", "r70", "r80", "r90"]
+pen = pens[7]
 
-# for vscale in 1.06:0.01:1.10, loadscale in [0.2] #0.8:0.05:1.0
-    # for vscale in 0.98:0.01:1.07, loadscale in [1] #0.8:0.05:1.0
+for vscale in 1.00:0.01:1.10, loadscale in 0.1:0.1:1, pen in pens 
+    @show vscale, loadscale, pen 
     eng4w = parse_file(file, transformations=[transform_loops!,remove_all_bounds!])
     eng4w["settings"]["sbase_default"] = 1
     eng4w["voltage_source"]["source"]["rs"] *=0
@@ -49,7 +53,7 @@ loadscale = 0.2
     end
 
     for (g,gen) in math4w["gen"]
-        gen["cost"] = 0.00001
+        gen["cost"] = 0.0
     end
 
     for (d,load) in math4w["load"]
@@ -60,8 +64,7 @@ loadscale = 0.2
     function add_gens!(math4w)
         gen_counter = 2
         for (d, load) in math4w["load"]
-            if mod(load["index"], 4) == 1
-                # phases = 3
+            if p[!,pen][load["index"]]
                 phases = length(load["connections"])-1
                 math4w["gen"]["$gen_counter"] = deepcopy(math4w["gen"]["1"])
                 math4w["gen"]["$gen_counter"]["name"] = "$gen_counter"
@@ -76,14 +79,16 @@ loadscale = 0.2
                 gen_counter = gen_counter + 1
             end
         end
+        @show "added $(gen_counter-1) PV systems at penetration $(pen) for $(length(math4w["load"])) loads"
+
     end
     add_gens!(math4w)
     add_start_vrvi!(math4w)
-
+    all_feasible = true
 
     res_comp = solve_mc_vvvw_doe_competitive(math4w, ipopt)
-    @show res_comp["termination_status"]
-    @assert(res_comp["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
+    # @assert(result_usable(res_comp))
+    all_feasible = all_feasible && result_usable(res_comp)
     res_comp_obj = round(res_comp["objective"], digits=2)
     pg_cost1 = [gen["pg_cost"] for (g,gen) in res_comp["solution"]["gen"] if g!="1"]
     pg_ref_comp = res_comp["solution"]["gen"]["1"]["pg"]
@@ -105,8 +110,9 @@ loadscale = 0.2
 
 
     res_log = solve_mc_vvvw_doe_log_fairness(math4w, ipopt)
-    @show res_log["termination_status"]
-    @assert(res_log["termination_status"]==LOCALLY_SOLVED || res_log["termination_status"]==ALMOST_LOCALLY_SOLVED)
+    # @assert(result_usable(res_log))
+    all_feasible = all_feasible && result_usable(res_log)
+    
     pg_cost5 = [gen["pg_cost"] for (g,gen) in res_log["solution"]["gen"] if g!="1"]
     res_log_obj = round(res_log["objective"], digits=2)
     pg_ref_log = res_log["solution"]["gen"]["1"]["pg"]
@@ -128,28 +134,30 @@ loadscale = 0.2
 
     end
 
-    bb = sortperm(pg_cost5)
-    pg_cost1a = pg_cost1[bb]
-    # pg_cost2a = pg_cost2[bb]
-    # pg_cost3a = pg_cost3[bb]
-    pg_cost4a = pg_cost4[bb]
-    pg_cost5a = pg_cost5[bb]
+    if all_feasible
+        bb = sortperm(pg_cost5)
+        pg_cost1a = pg_cost1[bb]
+        # pg_cost2a = pg_cost2[bb]
+        # pg_cost3a = pg_cost3[bb]
+        pg_cost4a = pg_cost4[bb]
+        pg_cost5a = pg_cost5[bb]
+        
+        plot(pg_cost1a, linestyle=:dash, label="max. competitive $res_comp_obj - net. P $(round(sum(pg_ref_comp),digits=1)), Q $(round(sum(qg_ref_comp),digits=1))")
+        # plot!(pg_cost2a, linestyle=:dot,  label="min. deviation squared $res_ms_obj - net. cons. $(round(sum(pg_ref_ms),digits=2))")
+        # plot!(pg_cost3a, linestyle=:dashdotdot, label="min. absolute deviation $res_abs_obj - net. cons. $(round(sum(pg_ref_abs),digits=2))")
+        plot!(pg_cost4a, linstyle=:dashdot, label="equal $res_eq_obj  - net. P $(round(sum(pg_ref_eq),digits=1)), Q $(round(sum(qg_ref_eq),digits=1))")
+        plot!(pg_cost5a, linstyle=:solid, label="log fairness  - net. P $(round(sum(pg_ref_log),digits=1)), Q $(round(sum(qg_ref_log),digits=1))", legend=:bottomright)
 
-    plot(pg_cost1a, linestyle=:dash, label="max. competitive $res_comp_obj - net. P $(round(sum(pg_ref_comp),digits=1)), Q $(round(sum(qg_ref_comp),digits=1))")
-    # plot!(pg_cost2a, linestyle=:dot,  label="min. deviation squared $res_ms_obj - net. cons. $(round(sum(pg_ref_ms),digits=2))")
-    # plot!(pg_cost3a, linestyle=:dashdotdot, label="min. absolute deviation $res_abs_obj - net. cons. $(round(sum(pg_ref_abs),digits=2))")
-    plot!(pg_cost4a, linstyle=:dashdot, label="equal $res_eq_obj  - net. P $(round(sum(pg_ref_eq),digits=1)), Q $(round(sum(qg_ref_eq),digits=1))")
-    plot!(pg_cost5a, linstyle=:solid, label="log fairness  - net. P $(round(sum(pg_ref_log),digits=1)), Q $(round(sum(qg_ref_log),digits=1))", legend=:bottomright)
+        xlabel!("PV system id (-)")
 
-    xlabel!("PV system id (-)")
+        ylabel!("Export DOE (kW)")
+        ylims!(0,5.1)
+        xlims!(0.5,length(pg_cost1)+0.5)
+        title!("VVVW, voltage of $vscale pu, load at $loadscale")
+        savefig("VVVW$vscale load$loadscale.pdf")
+    end
+end
 
-    ylabel!("Export DOE (kW)")
-    ylims!(0,5.1)
-    xlims!(0.5,length(pg_cost1)+0.5)
-    title!("Voltage of $vscale pu, load at $loadscale")
-    savefig("VVVW$vscale load$loadscale.pdf")
-
-# end
 # v_mag = stack([hypot.(bus["vr"],bus["vi"]) for (b,bus) in res["solution"]["bus"]], dims=1)
 
 
