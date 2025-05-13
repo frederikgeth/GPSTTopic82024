@@ -1,0 +1,2 @@
+// new reactor.sourcebusgrounding phases=1 bus1=B1.4 bus2=B1.0 r=0.01 x=0.0
+// new reactor.loadbusgrounding phases=1 bus1=B2.4 bus2=B2.0 r=10.0 x=0.0

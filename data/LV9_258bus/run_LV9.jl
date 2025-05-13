@@ -2,6 +2,7 @@ using OpenDSSDirect
 const ODSS = OpenDSSDirect
 using DataFrames
 using CSV
+using Plots
 file = "Master.dss"
 odssstring = """
 clear

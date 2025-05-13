@@ -32,8 +32,8 @@ export nw_id_default, optimize_model!, ismultinetwork, update_data!
 export solve_mc_vvvw_opf
 
 #exports without vv/vw
-export solve_mc_doe_max_pg_competitive, solve_mc_doe_fair_pg_mse, solve_mc_doe_fair_pg_abs, solve_mc_doe_equal
+export solve_mc_doe_max_pg_competitive, solve_mc_doe_fair_pg_mse, solve_mc_doe_fair_pg_abs, solve_mc_doe_equal, solve_mc_doe_log_fairness
 #exports with vv/vw
-export solve_mc_vvvw_doe_competitive,   solve_mc_vvvw_doe_mse,    solve_mc_vvvw_doe_abs,    solve_mc_vvvw_doe_equal
+export solve_mc_vvvw_doe_competitive,   solve_mc_vvvw_doe_mse,    solve_mc_vvvw_doe_abs,    solve_mc_vvvw_doe_equal, solve_mc_vvvw_doe_log_fairness
 
 end # module GPSTTopic82024

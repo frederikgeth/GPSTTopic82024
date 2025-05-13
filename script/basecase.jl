@@ -13,26 +13,26 @@ busdistances_dict = Dict(busdistancesdf.Bus[i] => busdistancesdf.busdistances[i]
 
 
 vscale = 1
-loadscale = 0.
+loadscale = 1
 # for vscale in 0.98:0.01:1.07, loadscale in [1] #0.8:0.05:1.0
     # for vscale in 0.98:0.01:1.07, loadscale in [1] #0.8:0.05:1.0
     eng4w = parse_file(file, transformations=[transform_loops!,remove_all_bounds!])
     eng4w["conductor_ids"] = 1:4
     eng4w["settings"]["sbase_default"] = 1
-    eng4w["voltage_source"]["source"]["rs"] =zeros(3,3)
-    eng4w["voltage_source"]["source"]["xs"] =zeros(3,3)
+    eng4w["voltage_source"]["source"]["rs"] *=0 
+    eng4w["voltage_source"]["source"]["xs"] *=0
     eng4w["voltage_source"]["source"]["vm"] *=vscale
 
     reduce_line_series!(eng4w)
     math4w = transform_data_model(eng4w, kron_reduce=false, phase_project=false)
-    math4w["bus"]["190"]["grounded"] = Bool[0, 0, 0, 0]
-    math4w["bus"]["190"]["vr_start"] = [1.0, -0.5, -0.5, 0.0]
-    math4w["bus"]["190"]["vi_start"] = [0.0, -0.866025, 0.866025, 0.0]
-    math4w["bus"]["190"]["va"] = [0.0, -2.0944, 2.0944, 0.0]
-    math4w["bus"]["190"]["vm"] = [1.0, 1.0, 1.0, 0.0]
-    math4w["bus"]["190"]["vmin"] = 0 .*[1.0, 1.0, 1.0, 1.0]
-    math4w["bus"]["190"]["vmax"] = 2* [1.0, 1.0, 1.0, 1.0]
-    math4w["bus"]["190"]["terminals"] = collect(1:4)
+    # math4w["bus"]["190"]["grounded"] = Bool[0, 0, 0, 0]
+    # math4w["bus"]["190"]["vr_start"] = [1.0, -0.5, -0.5, 0.0]
+    # math4w["bus"]["190"]["vi_start"] = [0.0, -0.866025, 0.866025, 0.0]
+    # math4w["bus"]["190"]["va"] = [0.0, -2.0944, 2.0944, 0.0]
+    # math4w["bus"]["190"]["vm"] = [1.0, 1.0, 1.0, 0.0]
+    # math4w["bus"]["190"]["vmin"] = 0 .*[1.0, 1.0, 1.0, 1.0]
+    # math4w["bus"]["190"]["vmax"] = 2* [1.0, 1.0, 1.0, 1.0]
+    # math4w["bus"]["190"]["terminals"] = collect(1:4)
     
     
     add_start_vrvi!(math4w)
@@ -43,7 +43,7 @@ loadscale = 0.
             # bus["vm_pair_ub"] = [(1, 4, 1.5);(2, 4, 1.5);(3, 4, 1.5)]
             bus["vmax"] = ones(4)*2
             # bus["vmax"][end] = 2
-            # bus["vmin"] = zeros(4)
+            bus["vmin"] = zeros(4)
             # bus["grounded"] .=  0
         else
             @show bus
@@ -53,7 +53,7 @@ loadscale = 0.
 
     for (g,gen) in math4w["gen"]
         math4w["gen"]["1"]["cost"] = [1, 1, 1]
-        s = 100
+        s = 1000
         gen["pmin"] = -s*ones(3)
         gen["pmax"] = s*ones(3)
         gen["qmin"] = -s*ones(3)

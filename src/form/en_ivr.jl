@@ -25,6 +25,7 @@ function constraint_mc_gen_voltvar(pm::_PMD.ExplicitNeutralModels, id::Int; nw::
     # @show "vv  gen $id"
     if id == 1
         # do nothing for source bus
+        @show  generator
     else
         if configuration==_PMD.WYE
             for (idx, p) in enumerate(phases)

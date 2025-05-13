@@ -1,4 +1,4 @@
-new reactor.tx_busgrounding_B342 phases=1 bus1=B342.4 bus2=B342.0 r=0.3 x=0.0
+// new reactor.tx_busgrounding_B342 phases=1 bus1=B342.4 bus2=B342.0 r=0.3 x=0.0
 new reactor.loadbusgrounding_B2249 phases=1 bus1=B2249.4 bus2=B2249.0 r=10.0 x=0.0
 new reactor.loadbusgrounding_B191 phases=1 bus1=B191.4 bus2=B191.0 r=10.0 x=0.0
 new reactor.loadbusgrounding_B335 phases=1 bus1=B335.4 bus2=B335.0 r=10.0 x=0.0

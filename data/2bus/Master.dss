@@ -1,0 +1,10 @@
+new circuit.2bus  basekv=0.4 phases=3 bus1=sourcebus model=ideal
+
+redirect Linecodes.dss
+redirect lines.dss
+redirect Loads.dss
+// redirect Groundings.dss
+new line.for_energymeter lineCode=ughv_400al_triplex_ug_4w_bundled bus1=sourcebus.1.2.3.0 bus2=B1.1.2.3.4 length=0.0001 units=km phases=4
+
+// new line.for_energymeter lineCode=ughv_400al_triplex_ug_4w_bundled bus1=sourcebus bus2=B342 length=0.0001 units=km phases=4
+// New EnergyMeter.Source     Element=Line.for_energymeter Terminal=1  
