@@ -156,50 +156,52 @@ for vscale in 1.04:0.01:1.10, loadscale in 0.1:0.1:1, pen in pens
         xlims!(0.5,length(pg_cost1)+0.5)
         title!("VVVW, voltage of $vscale pu, load at $loadscale, pen $(pen[2:end])")
         savefig("figures/VVVW$vscale load$loadscale pen$pen.pdf")
+        savefig("figures/VVVW$vscale load$loadscale pen$pen.png")
+        savefig("figures/VVVW$vscale load$loadscale pen$pen.svg")
     end
 end
 
 
-    res_ms = solve_mc_vvvw_doe_mse(math4w, ipopt)
-    @assert(res_ms["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
-    pg_cost2 = [gen["pg_cost"] for (g,gen) in res_ms["solution"]["gen"] if g!="1"]
-    res_ms_obj = round(res_ms["objective"], digits=2)
+#     res_ms = solve_mc_vvvw_doe_mse(math4w, ipopt)
+#     @assert(res_ms["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
+#     pg_cost2 = [gen["pg_cost"] for (g,gen) in res_ms["solution"]["gen"] if g!="1"]
+#     res_ms_obj = round(res_ms["objective"], digits=2)
 
-    res_abs = solve_mc_vvvw_doe_abs(math4w, ipopt)
-    @assert(res_abs["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
-    pg_cost3 = [gen["pg_cost"] for (g,gen) in res_abs["solution"]["gen"] if g!="1"]
-    res_abs_obj = round(res_abs["objective"], digits=2)
+#     res_abs = solve_mc_vvvw_doe_abs(math4w, ipopt)
+#     @assert(res_abs["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
+#     pg_cost3 = [gen["pg_cost"] for (g,gen) in res_abs["solution"]["gen"] if g!="1"]
+#     res_abs_obj = round(res_abs["objective"], digits=2)
 
-    res_eq_obj = 0
-    res_eq = solve_mc_vvvw_doe_equal(math4w, ipopt)
-    if res_eq["termination_status"]==LOCALLY_INFEASIBLE
-        pg_cost4 = 0 .*pg_cost1
-        res_eq_obj = 0
-    else
-        @assert(res_eq["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
-        pg_cost4 = [gen["pg_cost"] for (g,gen) in res_eq["solution"]["gen"] if g!="1"]
-        res_eq_obj = round(res_eq["objective"], digits=2)
-    end
+#     res_eq_obj = 0
+#     res_eq = solve_mc_vvvw_doe_equal(math4w, ipopt)
+#     if res_eq["termination_status"]==LOCALLY_INFEASIBLE
+#         pg_cost4 = 0 .*pg_cost1
+#         res_eq_obj = 0
+#     else
+#         @assert(res_eq["termination_status"]==LOCALLY_SOLVED || res_comp["termination_status"]==ALMOST_LOCALLY_SOLVED)
+#         pg_cost4 = [gen["pg_cost"] for (g,gen) in res_eq["solution"]["gen"] if g!="1"]
+#         res_eq_obj = round(res_eq["objective"], digits=2)
+#     end
 
-    bb = sortperm(pg_cost3)
-    pg_cost1 = pg_cost1[bb]
-    pg_cost2 = pg_cost2[bb]
-    pg_cost3 = pg_cost3[bb]
-    pg_cost4 = pg_cost4[bb]
+#     bb = sortperm(pg_cost3)
+#     pg_cost1 = pg_cost1[bb]
+#     pg_cost2 = pg_cost2[bb]
+#     pg_cost3 = pg_cost3[bb]
+#     pg_cost4 = pg_cost4[bb]
 
-    plot(pg_cost1, label="max competitive $res_comp_obj")
-    plot!(pg_cost2, label="min deviation squared $res_ms_obj")
-    plot!(pg_cost3, label="min absolute deviation $res_abs_obj ")
-    plot!(pg_cost4, label="equal $res_eq_obj")
-    xlabel!("PV system id (-)")
+#     plot(pg_cost1, label="max competitive $res_comp_obj")
+#     plot!(pg_cost2, label="min deviation squared $res_ms_obj")
+#     plot!(pg_cost3, label="min absolute deviation $res_abs_obj ")
+#     plot!(pg_cost4, label="equal $res_eq_obj")
+#     xlabel!("PV system id (-)")
 
-    ylabel!("Export DOE (kW)")
-    ylims!(0,5.1)
-    xlims!(0.5,length(pg_cost1)+0.5)
-    title!("Export limits at reference voltage of $vscale pu")
-    savefig("objective_comparison_vsource$vscale.pdf")
+#     ylabel!("Export DOE (kW)")
+#     ylims!(0,5.1)
+#     xlims!(0.5,length(pg_cost1)+0.5)
+#     title!("Export limits at reference voltage of $vscale pu")
+#     savefig("objective_comparison_vsource$vscale.pdf")
 
-end
+# end
 # v_mag = stack([hypot.(bus["vr"],bus["vi"]) for (b,bus) in res["solution"]["bus"]], dims=1)
 
 

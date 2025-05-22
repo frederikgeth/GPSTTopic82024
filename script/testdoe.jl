@@ -156,7 +156,7 @@ for vscale in 1.00:0.01:1.10, loadscale in 0.1:0.1:1, pen in pens
 
 
     if all_feasible
-        plot(pg_cost1a, linestyle=:dash, label="max. competitive $res_comp_obj - net. P $(round(sum(pg_ref_comp),digits=1)), Q $(round(sum(qg_ref_comp),digits=1))) ")
+        plot(pg_cost1a, linestyle=:dash, label="max. competitive $res_comp_obj - net. P $(round(sum(pg_ref_comp),digits=1)), Q $(round(sum(qg_ref_comp),digits=1))")
         # plot!(pg_cost2a, linestyle=:dot,  label="min. deviation squared $res_ms_obj - net. cons. $(round(sum(pg_ref_ms),digits=2))")
         # plot!(pg_cost3a, linestyle=:dashdotdot, label="min. absolute deviation $res_abs_obj - net. cons. $(round(sum(pg_ref_abs),digits=2))")
         plot!(pg_cost4a, linstyle=:dashdot, label="equal $res_eq_obj  - net. P $(round(sum(pg_ref_eq),digits=1)), Q $(round(sum(qg_ref_eq),digits=1))")
@@ -167,5 +167,6 @@ for vscale in 1.00:0.01:1.10, loadscale in 0.1:0.1:1, pen in pens
         xlims!(0.5,length(pg_cost1)+0.5)
         title!("No VVWC, voltage of $vscale pu, load at $loadscale, pen $(pen[2:end])")
         savefig("figures/NOVVVW_vsource$vscale load$loadscale pen$pen pf095.pdf")
+        savefig("figures/NOVVVW_vsource$vscale load$loadscale pen$pen pf095.png")
     end
 end
